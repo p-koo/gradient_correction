@@ -11,7 +11,7 @@ try:
     AUTOTUNE = tf.data.AUTOTUNE
 except AttributeError:
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-    
+
 def get_training_dataset(
     glob_pattern: str, batch_size: int, shuffle_buffer: int, num_parallel_calls: int
 ):
@@ -169,7 +169,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
 # train model
 history = model.fit(dset_train, 
                     epochs=100,
-                    batch_size=100, 
+                    batch_size=(100,100), 
                     shuffle=True,
                     validation_data=(x_valid, y_valid), 
                     callbacks=[es_callback, reduce_lr])
