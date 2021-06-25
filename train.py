@@ -49,7 +49,7 @@ def get_validation_arrays(path):
     x_valid = x_valid.astype(np.float32)
     y_valid = y_valid.astype(np.float32)
 
-    return x_valid, y_valid
+    return tf.data.Dataset.from_tensor_slices(x_valid, y_valid) 
 
 #-----------------------------------------------------------------
 
@@ -87,7 +87,8 @@ dset = dset.batch(batch_size)
 dset = dset.prefetch(100)
 
 filepath = os.path.join(data_path, 'deepsea_dataset.h5')
-x_valid, y_valid = get_validation_arrays(filepath)
+validset = get_validation_arrays(filepath)
+valid_set = validset.batch(batch_size)
 
 # get shapes
 N, L, A = x_valid.shape
@@ -151,7 +152,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
 history = model.fit(dset, 
                     epochs=100,
                     shuffle=True,
-                    validation_data=(x_valid, y_valid), 
+                    validation_data=valid_set, 
                     batch_size=batch_size,
                     callbacks=[es_callback, reduce_lr])
 
