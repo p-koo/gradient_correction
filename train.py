@@ -49,7 +49,7 @@ def get_validation_arrays(path):
     x_valid = x_valid.astype(np.float32)
     y_valid = y_valid.astype(np.float32)
 
-    return tf.data.Dataset.from_tensor_slices(x_valid, y_valid) 
+    return tf.data.Dataset.from_tensor_slices((x_valid, y_valid)) 
 
 #-----------------------------------------------------------------
 
