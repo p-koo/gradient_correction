@@ -28,6 +28,28 @@ def _parse_example(serialized: bytes):
     y = tf.reshape(y, shape=[919])
     return x, y
 
+def get_validation_arrays(path):
+    """Return numpy arrays of data.
+
+    Parameters
+    ----------
+    path : str, Path-like
+        Path to HDF5 file. Must have the following datasets:
+            - /deepsea/validation/features
+            - /deepsea/validation/features
+
+    Returns
+    -------
+    Numpy arrays: (x_valid, y_valid)
+    """
+    with h5py.File(path, "r") as f:
+        x_valid = f["/deepsea/validation/features"][:]
+        y_valid = f["/deepsea/validation/labels"][:]
+
+    x_valid = x_valid.astype(np.float32)
+    y_valid = y_valid.astype(np.float32)
+
+    return x_valid, y_valid
 
 #-----------------------------------------------------------------
 
