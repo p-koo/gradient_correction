@@ -169,10 +169,10 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
 # train model
 history = model.fit(dset_train, 
                     epochs=100,
-                    batch_size=(100,100), 
                     shuffle=True,
                     validation_data=(x_valid, y_valid), 
                     callbacks=[es_callback, reduce_lr])
+
 
 # save training and performance results
 results = model.evaluate(x_test, y_test)
