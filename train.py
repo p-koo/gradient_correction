@@ -7,6 +7,11 @@ import model_zoo
 
 #-----------------------------------------------------------------
 
+try:
+    AUTOTUNE = tf.data.AUTOTUNE
+except AttributeError:
+    AUTOTUNE = tf.data.experimental.AUTOTUNE
+    
 def get_training_dataset(
     glob_pattern: str, batch_size: int, shuffle_buffer: int, num_parallel_calls: int
 ):
