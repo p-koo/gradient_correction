@@ -152,7 +152,7 @@ history = model.fit(dset,
                     epochs=100,
                     shuffle=True,
                     validation_data=(x_valid, y_valid), 
-                    validation_batch_size=batch_size,
+                    batch_size=batch_size,
                     callbacks=[es_callback, reduce_lr])
 
 
