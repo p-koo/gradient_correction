@@ -6,73 +6,20 @@ import tensorflow as tf
 import model_zoo
 
 #-----------------------------------------------------------------
-
-try:
-    AUTOTUNE = tf.data.AUTOTUNE
-except AttributeError:
-    AUTOTUNE = tf.data.experimental.AUTOTUNE
-
-def get_training_dataset(
-    glob_pattern: str, batch_size: int, shuffle_buffer: int, num_parallel_calls: int
-):
-    """Return a `tf.data.Dataset` of training data.
-
-    Parameters
-    ----------
-    glob_pattern : str
-        Pattern with which to glob TFRecord files for this dataset.
-
-    Returns
-    -------
-    A `tf.data.Dataset` instance that returns (features, labels).
+def _parse_example(serialized: bytes):
+    """Return tuple of (features, labels) for a single example 
+    in a TFRecord file.
+    
+    This function should not be used directly. Rather, it should be
+    used in a tf.data.Dataset transformation.
     """
-    # Training data from TFRecords (it's big).
-    # Shuffle files and also shuffle samples.
-    dset = tf.data.Dataset.list_files(str(glob_pattern), shuffle=True)
-    dset = dset.interleave(
-        lambda f: tf.data.TFRecordDataset(f, compression_type="GZIP"),
-        num_parallel_calls=num_parallel_calls,
-        cycle_length=num_parallel_calls,
-    )
-    dset = dset.map(parse_example, num_parallel_calls=num_parallel_calls)
-    dset = dset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
-    dset = dset.batch(batch_size)
-    dset = dset.prefetch(AUTOTUNE)  # prefetch this many batches
-    return dset
-
-
-def get_validation_arrays(path):
-    """Return numpy arrays of data.
-
-    Parameters
-    ----------
-    path : str, Path-like
-        Path to HDF5 file. Must have the following datasets:
-            - /deepsea/validation/features
-            - /deepsea/validation/features
-
-    Returns
-    -------
-    Numpy arrays: (x_valid, y_valid)
-    """
-    with h5py.File(path, "r") as f:
-        x_valid = f["/deepsea/validation/features"][:]
-        y_valid = f["/deepsea/validation/labels"][:]
-
-    x_valid = x_valid.astype(np.float32)
-    y_valid = y_valid.astype(np.float32)
-
-    return x_valid, y_valid
-
-
-
-def parse_example(serialized):
-    """Return (features, labels) from one serialized TFRecord example."""
     features = {
         "feature/value": tf.io.FixedLenFeature(shape=(), dtype=tf.string),
         "label/value": tf.io.FixedLenFeature(shape=(), dtype=tf.string),
     }
     example = tf.io.parse_single_example(serialized, features)
+    # The keys in the `example` dictionary are arbitrary and are 
+    # chosen when creating the TFRecord file.
     x = tf.io.decode_raw(example["feature/value"], tf.float32)
     y = tf.io.decode_raw(example["label/value"], tf.float32)
     # The shapes are encoded in the TFRecord file, but we cannot use
@@ -80,6 +27,7 @@ def parse_example(serialized):
     x = tf.reshape(x, shape=[1000, 4])
     y = tf.reshape(y, shape=[919])
     return x, y
+
 
 #-----------------------------------------------------------------
 
@@ -101,9 +49,20 @@ if not os.path.exists(results_path):
 # load data
 data_path = '../../data'
 
-tfrecord_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-00000.tfrec')
-dset_train = get_training_dataset(tfrecord_glob, batch_size=100, 
-                                  shuffle_buffer=100000, num_parallel_calls=4)
+
+tfrec_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-00000.tfrec')
+batch_size = 100
+num_parallel_calls = 4
+dset = tf.data.Dataset.list_files(tfrec_glob, shuffle=True)
+dset = dset.interleave(
+    lambda f: tf.data.TFRecordDataset(f, compression_type="GZIP"),
+    num_parallel_calls=num_parallel_calls,
+    cycle_length=num_parallel_calls,
+)
+dset = dset.map(_parse_example, num_parallel_calls=num_parallel_calls)
+dset = dset.shuffle(10000, reshuffle_each_iteration=True)
+dset = dset.batch(batch_size)
+dset = dset.prefetch(100)
 
 filepath = os.path.join(data_path, 'deepsea_dataset.h5')
 x_valid, y_valid = get_validation_arrays(filepath)
