@@ -91,8 +91,9 @@ validset = get_validation_arrays(filepath)
 valid_set = validset.batch(batch_size)
 
 # get shapes
-N, L, A = x_valid.shape
-num_labels = y_valid.shape[1]
+L = 1000
+A = 4
+num_labels = 919
 
 # build model
 print(model_name)
