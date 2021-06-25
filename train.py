@@ -72,7 +72,7 @@ if not os.path.exists(results_path):
 data_path = '../../data'
 
 
-tfrec_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-00000.tfrec')
+tfrec_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-*.tfrec')
 batch_size = 64
 num_parallel_calls = 4
 dset = tf.data.Dataset.list_files(tfrec_glob, shuffle=True)
