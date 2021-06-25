@@ -7,61 +7,6 @@ import model_zoo
 
 #-----------------------------------------------------------------
 
-def get_training_dataset(
-    glob_pattern: str, batch_size: int, shuffle_buffer: int, num_parallel_calls: int
-):
-    """Return a `tf.data.Dataset` of training data.
-
-    Parameters
-    ----------
-    glob_pattern : str
-        Pattern with which to glob TFRecord files for this dataset.
-
-    Returns
-    -------
-    A `tf.data.Dataset` instance that returns (features, labels).
-    """
-    # Training data from TFRecords (it's big).
-    # Shuffle files and also shuffle samples.
-    dset = tf.data.Dataset.list_files(str(glob_pattern), shuffle=True)
-    dset = dset.interleave(
-        lambda f: tf.data.TFRecordDataset(f, compression_type="GZIP"),
-        num_parallel_calls=num_parallel_calls,
-        cycle_length=num_parallel_calls,
-        deterministic=False,  # can speed things up, and we don't need determinism
-    )
-    dset = dset.map(_parse_example, num_parallel_calls=num_parallel_calls)
-    dset = dset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
-    dset = dset.batch(batch_size)
-    dset = dset.prefetch(AUTOTUNE)  # prefetch this many batches
-    return dset
-
-
-def get_validation_arrays(path):
-    """Return numpy arrays of data.
-
-    Parameters
-    ----------
-    path : str, Path-like
-        Path to HDF5 file. Must have the following datasets:
-            - /deepsea/validation/features
-            - /deepsea/validation/features
-
-    Returns
-    -------
-    Numpy arrays: (x_valid, y_valid)
-    """
-    with h5py.File(path, "r") as f:
-        x_valid = f["/deepsea/validation/features"][:]
-        y_valid = f["/deepsea/validation/labels"][:]
-
-    x_valid = x_valid.astype(np.float32)
-    y_valid = y_valid.astype(np.float32)
-
-    return x_valid, y_valid
-
-#-----------------------------------------------------------------
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-m", type=str, default=0.05, help="model_name")
 parser.add_argument("-a", type=str, default='relu', help="activation")
@@ -79,13 +24,12 @@ if not os.path.exists(results_path):
 
 # load data
 data_path = '../../data'
-
-tfrecord_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-00000.tfrec')
-dset_train = get_training_dataset(tfrecord_glob, batch_size=100, 
-                                  shuffle_buffer=100000, num_parallel_calls=4)
-
 filepath = os.path.join(data_path, 'deepsea_dataset.h5')
-x_valid, y_valid = get_validation_arrays(filepath)
+dataset = h5py.File(filepath, 'r')
+x_train = np.array(dataset['deepsea']['train']['features']).astype(np.float32)
+y_train = np.array(dataset['deepsea']['train']['labels']).astype(np.float32)
+x_valid = np.array(dataset['deepsea']['validation']['features']).astype(np.float32)
+y_valid = np.array(dataset['deepsea']['validation']['labels']).astype(np.float32)
 
 # get shapes
 N, L, A = x_valid.shape
@@ -146,7 +90,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
                                                 verbose=1) 
 
 # train model
-history = model.fit(dset_train, 
+history = model.fit(x_train, y_train, 
                     epochs=100,
                     batch_size=100, 
                     shuffle=True,
