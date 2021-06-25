@@ -135,10 +135,10 @@ model.compile(tf.keras.optimizers.Adam(0.001), loss='binary_crossentropy', metri
 
 # early stopping callback
 es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_auroc', 
-                                            patience=6, 
-                                            verbose=1, 
-                                            mode='max', 
-                                            restore_best_weights=True)
+                                                patience=6, 
+                                                verbose=1, 
+                                                mode='max', 
+                                                restore_best_weights=True)
 # reduce learning rate callback
 reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc', 
                                                 factor=0.2,
@@ -152,6 +152,7 @@ history = model.fit(dset,
                     epochs=100,
                     shuffle=True,
                     validation_data=(x_valid, y_valid), 
+                    validation_batch_size=batch_size,
                     callbacks=[es_callback, reduce_lr])
 
 
