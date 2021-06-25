@@ -73,7 +73,7 @@ data_path = '../../data'
 
 
 tfrec_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-00000.tfrec')
-batch_size = 100
+batch_size = 64
 num_parallel_calls = 4
 dset = tf.data.Dataset.list_files(tfrec_glob, shuffle=True)
 dset = dset.interleave(
@@ -84,7 +84,7 @@ dset = dset.interleave(
 dset = dset.map(_parse_example, num_parallel_calls=num_parallel_calls)
 dset = dset.shuffle(10000, reshuffle_each_iteration=True)
 dset = dset.batch(batch_size)
-dset = dset.prefetch(100)
+dset = dset.prefetch(batch_size)
 
 filepath = os.path.join(data_path, 'deepsea_dataset.h5')
 validset = get_validation_arrays(filepath)
@@ -153,16 +153,9 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
 history = model.fit(dset, 
                     epochs=100,
                     validation_data=valid_set, 
-                    validation_steps=100,
+                    validation_steps=1000,
                     callbacks=[es_callback, reduce_lr])
 
-
-# save training and performance results
-results = model.evaluate(x_test, y_test)
-logs_dir = os.path.join(results_path, model_name+'_logs.pickle')
-with open(logs_dir, 'wb') as handle:
-    cPickle.dump(history.history, handle)
-    cPickle.dump(results, handle)
 
 # save model params
 model_dir = os.path.join(results_path, model_name+'_weights.h5')
