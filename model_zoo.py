@@ -5,7 +5,7 @@ from tfomics.layers import MultiHeadAttention
 def deepsea(input_shape, num_labels, activation='relu'):
     from tensorflow.keras.constraints import max_norm
     l1_l2_reg = keras.regularizers.L1L2(l1=1e-8, l2=5e-7)
-    l2_reg = keras.regularizers.L2(5e-7)
+    l2_reg = keras.regularizers.l2(5e-7)
 
     inputs = keras.layers.Input(shape=input_shape)
 
@@ -262,7 +262,7 @@ def cnn_trans(input_shape, num_labels, activation='relu', num_layers=1):
 def deepsea_custom(input_shape, num_labels, activation='relu'):
     from tensorflow.keras.constraints import max_norm
     l1_l2_reg = keras.regularizers.L1L2(l1=1e-8, l2=5e-7)
-    l2_reg = keras.regularizers.L2(5e-7)
+    l2_reg = keras.regularizers.l2(5e-7)
 
     inputs = keras.layers.Input(shape=input_shape)
 
@@ -344,7 +344,7 @@ def danq_custom(input_shape, num_labels, activation='relu'):
 
 
 def basset_custom(input_shape, num_labels, activation='relu'):
-    l2_reg = keras.regularizers.L2(1e-6)
+    l2_reg = keras.regularizers.l2(1e-6)
 
     inputs = keras.layers.Input(shape=input_shape)
 
