@@ -28,9 +28,8 @@ def get_training_dataset(
         lambda f: tf.data.TFRecordDataset(f, compression_type="GZIP"),
         num_parallel_calls=num_parallel_calls,
         cycle_length=num_parallel_calls,
-        deterministic=False,  # can speed things up, and we don't need determinism
     )
-    dset = dset.map(_parse_example, num_parallel_calls=num_parallel_calls)
+    dset = dset.map(parse_example, num_parallel_calls=num_parallel_calls)
     dset = dset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
     dset = dset.batch(batch_size)
     dset = dset.prefetch(AUTOTUNE)  # prefetch this many batches
@@ -59,6 +58,23 @@ def get_validation_arrays(path):
     y_valid = y_valid.astype(np.float32)
 
     return x_valid, y_valid
+
+
+
+def parse_example(serialized):
+    """Return (features, labels) from one serialized TFRecord example."""
+    features = {
+        "feature/value": tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+        "label/value": tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+    }
+    example = tf.io.parse_single_example(serialized, features)
+    x = tf.io.decode_raw(example["feature/value"], tf.float32)
+    y = tf.io.decode_raw(example["label/value"], tf.float32)
+    # The shapes are encoded in the TFRecord file, but we cannot use
+    # them dynamically (aka reshape according to the shape in this example).
+    x = tf.reshape(x, shape=[1000, 4])
+    y = tf.reshape(y, shape=[919])
+    return x, y
 
 #-----------------------------------------------------------------
 
