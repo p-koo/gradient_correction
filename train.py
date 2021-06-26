@@ -49,7 +49,7 @@ def get_validation_arrays(path):
     x_valid = x_valid.astype(np.float32)
     y_valid = y_valid.astype(np.float32)
 
-    return tf.data.Dataset.from_tensor_slices((x_valid, y_valid)) 
+    return x_valid, y_valid
 
 #-----------------------------------------------------------------
 
@@ -73,7 +73,7 @@ data_path = '../../data'
 
 
 tfrec_glob = os.path.join(data_path, 'tfrecord', 'deepsea_train_shard-*.tfrec')
-batch_size = 64
+batch_size = 100
 num_parallel_calls = 4
 dset = tf.data.Dataset.list_files(tfrec_glob, shuffle=True)
 dset = dset.interleave(
@@ -87,13 +87,13 @@ dset = dset.batch(batch_size)
 dset = dset.prefetch(batch_size)
 
 filepath = os.path.join(data_path, 'deepsea_dataset.h5')
-validset = get_validation_arrays(filepath)
+x_valid, y_valid = get_validation_arrays(filepath)
+validset = tf.data.Dataset.from_tensor_slices((x_valid, y_valid)) 
 valid_set = validset.batch(batch_size)
 
 # get shapes
-L = 1000
-A = 4
-num_labels = 919
+N, L, A = x_valid.shape
+num_labels = y_valid.shape
 
 # build model
 print(model_name)
@@ -153,7 +153,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_auroc',
 history = model.fit(dset, 
                     epochs=100,
                     validation_data=valid_set, 
-                    validation_steps=1000,
+                    validation_steps=np.floor(N/batch_size),
                     callbacks=[es_callback, reduce_lr])
 
 
