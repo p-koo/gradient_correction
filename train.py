@@ -93,7 +93,7 @@ valid_set = validset.batch(batch_size)
 
 # get shapes
 N, L, A = x_valid.shape
-num_labels = y_valid.shape
+num_labels = y_valid.shape[1]
 
 # build model
 print(model_name)
