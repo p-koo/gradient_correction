@@ -41,7 +41,7 @@ with open(os.path.join(results_path, 'results.txt'), 'w') as fout:
     results = []
     for model_name in model_names:
         for activation in activations:
-
+            tf.keras.backend.clear_session()
             # build model
             if model_name == 'deepsea':
                 model = model_zoo.deepsea((L,A), num_labels, activation)
