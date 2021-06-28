@@ -86,7 +86,7 @@ with open(os.path.join(results_path, 'results.txt'), 'w') as fout:
             model.load_weights(model_dir)
 
             # get test performance
-            test_results = model.evaluate(x_test, y_test)
+            test_results = model.evaluate(x_test, y_test, batch_size=100)
         
             # save results
             fout.write("%s\t%s\t%.4f\t%.4f\n"%(model_name, activation, test_results[1], test_results[2]))
