@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow import keras
 from tfomics.layers import MultiHeadAttention
 
@@ -60,6 +61,7 @@ def danq(input_shape, num_labels, activation='relu'):
     nn = keras.layers.Dropout(0.5)(nn)
 
     # layer 3 - Fully-connected 
+    nn = keras.layers.Flatten()(nn)
     nn = keras.layers.Dense(75*640, activation='relu', use_bias=True)(nn)      
 
     # layer 4 - Fully-connected 
@@ -134,7 +136,7 @@ def deepatt(input_shape, num_labels, activation='relu'):
     # layer 3
     category_encoding = tf.eye(num_labels)[tf.newaxis, :, :]
     query = tf.tile(category_encoding, multiples=[tf.shape(nn)[0], 1, 1])
-    nn = MultiHeadAttention(400, 4)(query, k=nn, v=nn)
+    nn = MultiHeadAttention(400, 4)(query, nn, nn)
     nn = keras.layers.Dropout(0.2)(nn)
 
     # Output layer
