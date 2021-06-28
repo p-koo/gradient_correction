@@ -16,7 +16,7 @@ def get_data(path, dataset='test'):
 
 #-----------------------------------------------------------------
 
-model_names = ['deepsea', 'danq', 'basset', 'deepsea_custom', 'danq_custom', 'basset_custom']
+model_names = ['deepsea', 'basset', 'deepsea_custom', 'basset_custom']
 activations = ['relu', 'exponential']
 trial = 0
 
