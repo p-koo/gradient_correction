@@ -54,9 +54,9 @@ def get_validation_arrays(path):
 #-----------------------------------------------------------------
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-m", type=str, default=0.05, help="model_name")
+parser.add_argument("-m", type=str, default='deepsea', help="model_name")
 parser.add_argument("-a", type=str, default='relu', help="activation")
-parser.add_argument("-t", type=int, default=None, help="trial")
+parser.add_argument("-t", type=int, default=0, help="trial")
 args = parser.parse_args()
 
 model_name = args.m

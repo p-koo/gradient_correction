@@ -1,16 +1,17 @@
+python train.py -t 0 -m deepsea -a relu
 python train.py -t 0 -m danq -a relu
 python train.py -t 0 -m basset -a relu
 python train.py -t 0 -m deepsea -a exponential
 python train.py -t 0 -m basset -a exponential
 python train.py -t 0 -m danq -a exponential
 python train.py -t 0 -m deepatt -a exponential
+python train.py -t 0 -m deepsea_custom -a relu
+python train.py -t 0 -m danq_custom -a relu
+python train.py -t 0 -m basset_custom -a relu
 
 
 #python train.py -t 0 -m deepatt -a relu
 #python train.py -t 0 -m cnn_att -a relu
-python train.py -t 0 -m deepsea_custom -a relu
-python train.py -t 0 -m danq_custom -a relu
-python train.py -t 0 -m basset_custom -a relu
 
 #python train.py -t 0 -m cnn_att -a exponential
 #python train.py -t 0 -m deepsea_custom -a exponential
